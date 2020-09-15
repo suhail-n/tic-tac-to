@@ -1,0 +1,9 @@
+version: '2'
+services:
+    tictactoe:
+        container_name: tictactoe
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports: 
+            - 4000:4000
