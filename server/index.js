@@ -2,6 +2,7 @@ const express = require("express");
 const socket = require("socket.io");
 const { join } = require('path');
 const Events = require('game-events');
+const { pseudoRandomBytes } = require('crypto');
 
 // App setup
 const app = express();
@@ -12,27 +13,50 @@ const server = app.listen(4000, function () {
   console.log("listening for requests on port 4000");
 });
 
-// app.use(express.static("public"));
-
-// Socket setup & pass server
 const io = socket(server);
+const rooms = {};
+let socks = [];
 
-io.on("connection", (socket) => {
+const getRooms = () => Object
+  .entries(io.sockets.adapter.rooms)
+  .filter(([roomId]) => !socks.includes(roomId))
+  .reduce((p, n) => ({ ...p, [n[0]]: n[1] }), {});
+
+io.on("connection", socket => {
   console.log("made socket connection", socket.id);
-  const rooms = io.sockets.adapter.rooms;
-  socket.emit(Events.ListRooms, rooms);
+  socks = Object.keys(io.sockets.sockets);
 
-  // emit to the one user socket
-  //   socket.emit("test", {
-  //     user: "foo",
-  //     msg: "This is foo sending a secret message",
-  //   });
-  // emit to every user including the current user
-  // io.emit('test', {user: 'foo', msg: 'This is foo sending a secret message'});
-  // emit to all users except the current
-  // socket.broadcast.emit('test', {user: 'foo', msg: 'This is foo sending a secret message'});
+  socket.on(Events.CreateRoom, (displayName) => {
+    const key = pseudoRandomBytes(16).toString('hex');
+    rooms[key] = displayName || key;
+    console.log('Created room', rooms[key]);
+    socket.join(key);
+    socket.emit(Events.RoomCreated, key);
+  });
+
+  socket.on(Events.JoinRoom, roomId => {
+    if (rooms[roomId]) {
+      socket.join(roomId);
+      socket.emit(Events.RoomJoined, roomId);
+    }
+  });
+
+  socket.on(Events.LeaveRoom, roomId => {
+    // TODO: Only delete after everyone is gone
+    delete rooms[roomId];
+    socket.leave(roomId);
+  });
+
+  socket.on('disconnect', () => {
+    socks = socks.filter(socketId => socketId !== socket.id);
+  });
 
   socket.on("newState", data => {
     io.emit("newState", data);
   });
+
+  const _rooms = getRooms();
+  console.log('socks', socks);
+  console.log('rooms', _rooms);
+  socket.emit(Events.ListRooms, getRooms());
 });

@@ -1,5 +1,8 @@
 {
     "CreateRoom": "CreateRoom",
+    "RoomCreated": "RoomCreated",
     "JoinRoom": "JoinRoom",
+    "RoomJoined": "RoomJoined",
+    "LeaveRoom": "LeaveRoom",
     "ListRooms": "ListRooms"
 }
