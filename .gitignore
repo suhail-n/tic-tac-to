@@ -104,7 +104,6 @@ dist
 .tern-port
 
 # dependencies
-/node_modules
 /.pnp
 .pnp.js
 
@@ -112,7 +111,7 @@ dist
 /coverage
 
 # production
-/build
+build
 
 # misc
 .DS_Store

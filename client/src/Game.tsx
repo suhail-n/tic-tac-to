@@ -1,14 +1,9 @@
 import React from "react";
+import Events from 'game-events';
 import { Board } from "./board/Board";
 import io from "socket.io-client";
-// super(props);
-// this.state = {
-//   history: [{
-//     squares: Array(9).fill(null),
-//   }],
-//   xIsNext: true,
-// };
-// }
+
+
 
 interface IGameState {
   xIsNext: boolean;
@@ -33,20 +28,20 @@ class Game extends React.Component<{}, IGameState> {
       stepNumber: 0,
     };
     this.socket = io("/");
-    
+
     this.socket.on("join", (data: { user: string; msg: string }) => {
       console.log(`Connected user ${data.user} with message ${data.msg}`);
     });
   }
 
   emitState = (state: IGameState) => {
-    console.log(`emitting state change: ${state}`)
+    console.log('emitting state change:', state);
     this.socket.emit("newState", state);
   }
-  
+
   componentDidMount(): void {
     // emit state as new game
-    this.emitState({...this.state});
+    this.emitState({ ...this.state });
 
     // call on state change
     this.socket.on("newState", (data: IGameState) => {

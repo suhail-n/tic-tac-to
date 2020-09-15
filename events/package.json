@@ -1,0 +1,8 @@
+{
+  "name": "game-events",
+  "version": "1.0.0",
+  "description": "Event names shared between client and server code.",
+  "main": "index.json",
+  "author": "Joseph Harrison-Lim",
+  "license": "ISC"
+}
